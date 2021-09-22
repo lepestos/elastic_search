@@ -1,3 +1,7 @@
+import json
+from copy import deepcopy
+
+
 DEF_SETTINGS = {
     "settings": {
         "number_of_shards": 1,
@@ -9,12 +13,19 @@ DEF_SETTINGS = {
     }
 }
 
+DEF_QUERY = {
+    "_source": False,
+    "query": {
+        "match": {
+        }
+    }
+}
+
 
 def build_settings(pairs):
-    settings = DEF_SETTINGS.copy()
+    settings = deepcopy(DEF_SETTINGS)
     settings["mappings"]["properties"] = pairs_to_el_format(pairs)
     return settings
-
 
 
 def pairs_to_el_format(pairs):
@@ -25,3 +36,9 @@ def pairs_to_el_format(pairs):
             'type': type_
         }
     return res
+
+
+def build_query(field, content):
+    res = deepcopy(DEF_QUERY)
+    res["query"]["match"][field] = content
+    return res.copy()

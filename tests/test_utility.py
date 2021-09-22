@@ -60,3 +60,26 @@ class UtilityTestCase(unittest.TestCase):
             }
         }
         self.assertEqual(res, expected)
+
+    def test_build_query(self):
+        expected = {
+            "_source": False,
+            "query": {
+                "match": {
+                    "text": "jewelry"
+                }
+            }
+        }
+        res = utility.build_query("text", "jewelry")
+        self.assertEqual(expected, res)
+
+        expected = {
+            "_source": False,
+            "query": {
+                "match": {
+                    "name": "John"
+                }
+            }
+        }
+        res = utility.build_query("name", "John")
+        self.assertEqual(expected, res)
