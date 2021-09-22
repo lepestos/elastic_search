@@ -37,6 +37,9 @@ def search_document(index, schema, field, content):
     body = utility.build_query(field, content)
     return requests.get(f'{BASE_URL}{index}/{schema}/_search?size=50', json=body)
 
+def delete_document_by_id(index, schema, id_):
+    return requests.delete(f'{BASE_URL}{index}/{schema}/{id_}')
+
 
 
 if __name__ == '__main__':

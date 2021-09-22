@@ -4,7 +4,7 @@ import time
 import index
 
 
-class SearchTestCase(unittest.TestCase):
+class IndexTestCase(unittest.TestCase):
     def test_connection(self):
         r = index.get_base_page()
         self.assertEqual(r.status_code, 200)
@@ -35,6 +35,11 @@ class SearchTestCase(unittest.TestCase):
         self.assertIn(added_doc_id, [hit['_id'] for hit in search_res.json()['hits']['hits']])
         index.delete_index("index4")
 
+    def test_delete_document_by_id(self):
+        added_doc = index.add_document("index5", "schema5", {"name": "Jack"})
+        added_doc_id = added_doc.json()['_id']
+        index.delete_document_by_id("index5", "schema5", added_doc_id)
+        self.assertEqual(404, index.get_document_by_id("index5", "schema5", added_doc_id).status_code)
 
 
 if __name__ == '__main__':
