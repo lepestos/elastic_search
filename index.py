@@ -5,7 +5,8 @@ import utility
 
 HOST = 'localhost'
 PORT = 9200
-BASE_URL = f'http://{HOST}:{PORT}/'
+BASE_URL = 'http://127.0.0.1:9200/'
+
 
 def get_base_page():
     return requests.get(BASE_URL)
@@ -35,7 +36,7 @@ def list_all_indices():
 
 def search_document(index, schema, field, content):
     body = utility.build_query(field, content)
-    return requests.get(f'{BASE_URL}{index}/{schema}/_search?size=50', json=body)
+    return requests.get(f'{BASE_URL}{index}/{schema}/_search?size=500', json=body)
 
 def delete_document_by_id(index, schema, id_):
     return requests.delete(f'{BASE_URL}{index}/{schema}/{id_}')

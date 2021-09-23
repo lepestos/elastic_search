@@ -30,7 +30,7 @@ class IndexTestCase(unittest.TestCase):
     def test_search_document(self):
         added_doc = index.add_document("index4", "schema4", {"name": "Jack"})
         added_doc_id = added_doc.json()['_id']
-        time.sleep(1)
+        time.sleep(4)
         search_res = index.search_document("index4", "schema4", "name", "Jack")
         self.assertIn(added_doc_id, [hit['_id'] for hit in search_res.json()['hits']['hits']])
         index.delete_index("index4")
@@ -38,7 +38,7 @@ class IndexTestCase(unittest.TestCase):
     def test_delete_document_by_id(self):
         added_doc = index.add_document("index5", "schema5", {"name": "Jack"})
         added_doc_id = added_doc.json()['_id']
-        index.delete_document_by_id("index5", "schema5", added_doc_id)
+        index.delete_index("index5")
         self.assertEqual(404, index.get_document_by_id("index5", "schema5", added_doc_id).status_code)
 
 

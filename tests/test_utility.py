@@ -83,3 +83,9 @@ class UtilityTestCase(unittest.TestCase):
         }
         res = utility.build_query("name", "John")
         self.assertEqual(expected, res)
+
+    def test_date_to_el_format(self):
+        expected = ['2021-22-08T17:18:42+00:00', '2019-02-08T07:18:02+00:00']
+        res = [utility.date_to_el_format(ds) for ds in ['2021-22-08 17:18:42', '2019-02-08 07:18:02']]
+        for r, e in zip(res, expected):
+            self.assertEqual(e, r)

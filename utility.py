@@ -42,3 +42,7 @@ def build_query(field, content):
     res = deepcopy(DEF_QUERY)
     res["query"]["match"][field] = content
     return res.copy()
+
+def date_to_el_format(date_str):
+    date_, time_ = date_str.split()
+    return f'{date_}T{time_}+00:00'
