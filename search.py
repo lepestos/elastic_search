@@ -3,15 +3,19 @@ import csv
 import index
 import utility
 
-def add_text_document(text, created_date, rubrics):
-    body = {'text': text, 'created_date': created_date, 'rubrics': rubrics}
-    r = index.add_document("search", "documents", body)
+def add_text_document(text, created_date, rubrics, index_='search'):
+    body = {
+        'text': text,
+        'created_date': utility.date_to_el_format(created_date),
+        'rubrics': rubrics
+    }
+    r = index.add_document(index_, "documents", body)
     return r.json()['_id']
 
-def add_multiple_text_documents(docs):
+def add_multiple_text_documents(docs, index_='search'):
     ids = []
     for text, created_date, rubrics in docs:
-        ids.append(add_text_document(text, created_date, rubrics))
+        ids.append(add_text_document(text, created_date, rubrics, index_))
     return tuple(ids)
 
 def add_csv_file(file):
@@ -20,9 +24,7 @@ def add_csv_file(file):
     next(reader)
     ids = []
     for text, created_date, rubrics in reader:
-        ids.append(add_text_document(
-            text, utility.date_to_el_format(created_date), rubrics
-        ))
+        ids.append(add_text_document(text, created_date, rubrics))
     return tuple(ids)
 
 def search_document(text):

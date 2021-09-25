@@ -3,8 +3,6 @@ import requests
 import utility
 
 
-HOST = 'localhost'
-PORT = 9200
 BASE_URL = 'http://127.0.0.1:9200/'
 
 
@@ -41,8 +39,5 @@ def search_document(index, schema, field, content):
 def delete_document_by_id(index, schema, id_):
     return requests.delete(f'{BASE_URL}{index}/{schema}/{id_}')
 
-
-
-if __name__ == '__main__':
-    r = requests.get(BASE_URL)
-    print(r.status_code)
+def index_counter(index):
+    return requests.get(f'{BASE_URL}{index}/_count').json()['count']

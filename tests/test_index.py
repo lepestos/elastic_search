@@ -40,7 +40,3 @@ class IndexTestCase(unittest.TestCase):
         added_doc_id = added_doc.json()['_id']
         index.delete_index("index5")
         self.assertEqual(404, index.get_document_by_id("index5", "schema5", added_doc_id).status_code)
-
-
-if __name__ == '__main__':
-    unittest.main()
