@@ -1,14 +1,35 @@
-import json
 from copy import deepcopy
 
 
 DEF_SETTINGS = {
     "settings": {
-        "number_of_shards": 1,
-        "number_of_replicas": 0
+        "analysis": {
+            "filter": {
+                "ru_stop": {
+                    "type": "stop",
+                    "stopwords": "_russian_"
+                },
+                "ru_stemmer": {
+                    "type": "stemmer",
+                    "language": "russian"
+                }
+            },
+            "analyzer": {
+                "default": {
+                    "char_filter": [
+                        "html_strip"
+                    ],
+                    "tokenizer": "standard",
+                    "filter": [
+                        "lowercase",
+                        "ru_stop",
+                        "ru_stemmer"
+                    ]
+                }
+            }
+        }
     },
     "mappings": {
-        "dynamic": "strict",
         "properties": {}
     }
 }
@@ -40,7 +61,9 @@ def pairs_to_el_format(pairs):
 
 def build_query(field, content):
     res = deepcopy(DEF_QUERY)
-    res["query"]["match"][field] = content
+    res["query"]["match"][field] = {}
+    res["query"]["match"][field]["query"] = content
+    res["query"]["match"][field]["operator"] = "and"
     return res.copy()
 
 def date_to_el_format(date_str):

@@ -24,49 +24,54 @@ class UtilityTestCase(unittest.TestCase):
 
 
     def test_build_settings(self):
+        expected = {
+            "settings": {
+                "analysis": {
+                    "filter": {
+                        "ru_stop": {
+                            "type": "stop",
+                            "stopwords": "_russian_"
+                        },
+                        "ru_stemmer": {
+                            "type": "stemmer",
+                            "language": "russian"
+                        }
+                    },
+                    "analyzer": {
+                        "default": {
+                            "char_filter": [
+                                "html_strip"
+                            ],
+                            "tokenizer": "standard",
+                            "filter": [
+                                "lowercase",
+                                "ru_stop",
+                                "ru_stemmer"
+                            ]
+                        }
+                    }
+                }
+            },
+            "mappings": {
+                    "properties": {
+                        "age": {
+                            "type": "integer"
+                        },
+                    }
+            }
+        }
         res = utility.build_settings([('age', 'integer')])
-        expected = {
-            "settings": {
-                "number_of_shards": 1,
-                "number_of_replicas": 0
-            },
-            "mappings": {
-                "dynamic": "strict",
-                "properties": {
-                    "age": {
-                        "type": "integer"
-                    },
-                }
-            }
-        }
-        self.assertEqual(res, expected)
-
-        res = utility.build_settings([('age', 'integer'), ('name', 'text')])
-        expected = {
-            "settings": {
-                "number_of_shards": 1,
-                "number_of_replicas": 0
-            },
-            "mappings": {
-                "dynamic": "strict",
-                "properties": {
-                    "age": {
-                        "type": "integer"
-                    },
-                    "name": {
-                        "type": "text"
-                    },
-                }
-            }
-        }
-        self.assertEqual(res, expected)
+        self.assertEqual(expected, res)
 
     def test_build_query(self):
         expected = {
             "_source": False,
             "query": {
                 "match": {
-                    "text": "jewelry"
+                    "text": {
+                        "query": "jewelry",
+                        "operator": "and"
+                    }
                 }
             }
         }
@@ -77,7 +82,10 @@ class UtilityTestCase(unittest.TestCase):
             "_source": False,
             "query": {
                 "match": {
-                    "name": "John"
+                    "name": {
+                        "query": "John",
+                        "operator": "and"
+                    }
                 }
             }
         }

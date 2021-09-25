@@ -8,9 +8,17 @@ import utility
 import index
 
 
-async def add_text_document(text, created_date, rubrics, session, index_='search'):
+PROPERTIES = (
+    ('text', 'text'),
+    ('created_date', 'date'),
+    ('rubrics', 'text')
+)
+
+
+async def add_text_document(text, created_date, rubrics,
+                            session, index_='search'):
     body = {'text': text, 'created_date': created_date, 'rubrics': rubrics}
-    await async_index.add_document(index_, "documents", body, session)
+    await async_index.add_document(index_, body, session)
 
 
 async def add_text_documents(texts, created_dates, rubrics, index_='search'):
@@ -29,8 +37,10 @@ def run_add_text_documents(texts, created_dates, rubrics, index='search'):
 def add_csv_file(file, index_='search'):
     reader = csv.reader(file, quotechar='"', delimiter=',',
                         quoting=csv.QUOTE_ALL, skipinitialspace=True)
-    next(reader)
+    if index_ not in index.list_all_indices():
+        index.create_index(index_, PROPERTIES)
     texts, created_dates, rubrics = [], [], []
+    next(reader)
     for t, d, r in reader:
         texts.append(t)
         created_dates.append(utility.date_to_el_format(d))
@@ -39,10 +49,10 @@ def add_csv_file(file, index_='search'):
 
 
 def search_document(text, index_='search'):
-    response = index.search_document(index_, 'documents', 'text', text)
+    response = index.search_document(index_, 'text', text)
     ids = [hit['_id'] for hit in response.json()['hits']['hits']]
     tasks = []
-    docs = async_index.run_get_documents_by_id(index_, 'documents', ids)
+    docs = async_index.run_get_documents_by_id(index_, ids)
     res = []
     for id_, doc in zip(ids, docs):
         res.append({
