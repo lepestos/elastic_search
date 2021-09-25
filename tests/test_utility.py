@@ -97,3 +97,9 @@ class UtilityTestCase(unittest.TestCase):
         res = [utility.date_to_el_format(ds) for ds in ['2021-22-08 17:18:42', '2019-02-08 07:18:02']]
         for r, e in zip(res, expected):
             self.assertEqual(e, r)
+
+    def test_to_seconds(self):
+        dates = ['2000-01-01T00:00:00+00:00', '2010-10-30T00:00:00+00:00', '2019-11-30T14:44:35+00:00']
+        in_seconds = [946684800, 1288396800, 1575125075]
+        for i, d in zip(in_seconds, dates):
+            self.assertEqual(i, utility.to_seconds(d))

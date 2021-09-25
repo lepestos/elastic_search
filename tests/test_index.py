@@ -1,46 +1,21 @@
+from time import sleep
 import unittest
-import time
 
+import syncindex
 import index
 
-
 class IndexTestCase(unittest.TestCase):
-    def test_connection(self):
-        r = index.get_base_page()
-        self.assertEqual(r.status_code, 200)
-        self.assertEqual(r.json()['cluster_name'], 'elasticsearch')
+    def test_run_add_documents_to_schema(self):
+        bodies = [{'name': f'Jason #{i}'} for i in range(531)]
+        index.run_add_documents_to_schema('index1', bodies)
+        sleep(5)
+        self.assertEqual(531, syncindex.index_counter('index1'))
+        syncindex.delete_index('index1')
 
-    def test_create_index(self):
-        index.create_index('index1')
-        self.assertEqual(index.get_index('index1').status_code, 200)
-        index.delete_index('index1')
-
-    def test_delete_index(self):
-        index.create_index('index2')
-        self.assertEqual(index.get_index('index2').status_code, 200)
-        index.delete_index('index2')
-        self.assertEqual(index.get_index('index2').status_code, 404)
-
-    def test_add_document(self):
-        r = index.add_document("index3", {"name": "John"})
-        self.assertEqual(r.status_code, 201)
-        self.assertEqual(index.get_document_by_id("index3", r.json()["_id"]).status_code, 200)
-        index.delete_index("index3")
-
-    def test_search_document(self):
-        added_doc = index.add_document("index4", {
-            "name": "Jack"
-        })
-        added_doc_id = added_doc.json()['_id']
-        time.sleep(4)
-        search_res = index.search_document("index4", "name", "Jack")
-        self.assertIn(added_doc_id, [hit['_id'] for hit in search_res.json()['hits']['hits']])
-        index.delete_index("index4")
-
-    def test_delete_document_by_id(self):
-        added_doc = index.add_document("index5", {
-            "name": "Jack"
-        })
-        added_doc_id = added_doc.json()['_id']
-        index.delete_index("index5")
-        self.assertEqual(404, index.get_document_by_id("index5", added_doc_id).status_code)
+    def test_run_get_documents_by_id(self):
+        bodies = [{'name': f'Jason #{i}'} for i in range(5)]
+        ids = []
+        for body in bodies:
+            ids.append(syncindex.add_document('index1', body).json()['_id'])
+        sleep(2)
+        self.assertEqual(5, len(index.run_get_documents_by_id('index1', ids)))

@@ -1,5 +1,6 @@
 from copy import deepcopy
-
+from datetime import datetime
+from typing import Dict, Iterable, Tuple
 
 DEF_SETTINGS = {
     "settings": {
@@ -43,13 +44,13 @@ DEF_QUERY = {
 }
 
 
-def build_settings(pairs):
+def build_settings(pairs: Iterable[Tuple]) -> Dict:
     settings = deepcopy(DEF_SETTINGS)
     settings["mappings"]["properties"] = pairs_to_el_format(pairs)
     return settings
 
 
-def pairs_to_el_format(pairs):
+def pairs_to_el_format(pairs: Iterable[Tuple]) -> Dict:
     # converts list of (property, type) into ES readable format
     res = {}
     for property_, type_ in pairs:
@@ -59,13 +60,23 @@ def pairs_to_el_format(pairs):
     return res
 
 
-def build_query(field, content):
+def build_query(field: str, content: str) -> Dict:
     res = deepcopy(DEF_QUERY)
     res["query"]["match"][field] = {}
     res["query"]["match"][field]["query"] = content
     res["query"]["match"][field]["operator"] = "and"
     return res.copy()
 
-def date_to_el_format(date_str):
+
+def date_to_el_format(date_str: str) -> str:
     date_, time_ = date_str.split()
     return f'{date_}T{time_}+00:00'
+
+
+def to_seconds(el_time: str) -> int:
+    date, time = el_time.split('T')
+    time = time.split('+')[0]
+    d = datetime(*[int(s) for s in date.split('-')],
+                 *[int(s) for s in time.split(':')])
+    d0 = datetime(1970, 1, 1)
+    return int((d-d0).total_seconds())

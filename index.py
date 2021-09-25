@@ -1,46 +1,50 @@
-import requests
+import asyncio
+from typing import Iterable, List
+
+import aiohttp
 
 import utility
 
 
 BASE_URL = 'http://127.0.0.1:9200/'
 
+async def add_document(index_: str, body: dict, session: aiohttp.ClientSession):
+    url = f'{BASE_URL}{index_}/_doc'
+    await session.post(url, json=body)
 
-def get_base_page():
-    return requests.get(BASE_URL)
 
-def get_index(index_name):
-    return requests.get(BASE_URL + index_name)
+async def get_document_by_id(index_: str, id_: str, session: aiohttp.ClientSession) -> aiohttp.ClientResponse:
+    url = f'{BASE_URL}{index_}/_doc/{id_}'
+    response = await session.get(url)
+    return response
 
-def create_index(index_name, properties=None):
-    settings = None
-    if properties is not None:
-        settings = utility.build_settings(properties)
-    return requests.put(BASE_URL + index_name, json=settings)
+async def get_documents_by_id(index_: str, ids: Iterable[str]) -> List[dict]:
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for id_ in ids:
+            task = asyncio.create_task(get_document_by_id(index_, id_, session))
+            tasks.append(task)
+        docs = await asyncio.gather(*tasks)
+    return [await doc.json() for doc in docs]
 
-def delete_index(index_name):
-    return requests.delete(BASE_URL + index_name)
+def run_get_documents_by_id(index_: str, ids: Iterable[str]) -> List[dict]:
+    return asyncio.run(get_documents_by_id(index_, ids))
 
-def delete_all_indices():
-    for ind in list_all_indices():
-        delete_index(ind)
 
-def add_document(index, body):
-    return requests.post(f'{BASE_URL}{index}/_doc', json=body)
+async def delete_document_by_id(index_: str, id_: str, session: aiohttp.ClientSession):
+    url = f'{BASE_URL}{index_}/{id_}'
+    with session.delete(url) as response:
+        await response.read()
 
-def get_document_by_id(index, id_):
-    return requests.get(f'{BASE_URL}{index}/_doc/{id_}')
+async def add_documents_to_schema(index_: str, bodies: Iterable[dict]):
+    tasks = []
+    async with aiohttp.ClientSession() as session:
+        for body in bodies:
+            task = asyncio.create_task(
+                add_document(index_, body, session)
+            )
+            tasks.append(task)
+        await asyncio.gather(*tasks)
 
-def list_all_indices():
-    r = requests.get(BASE_URL + '_aliases')
-    return list(r.json().keys())
-
-def search_document(index, field, content):
-    body = utility.build_query(field, content)
-    return requests.get(f'{BASE_URL}{index}/_search?size=500', json=body)
-
-def delete_document_by_id(index, id_):
-    return requests.delete(f'{BASE_URL}{index}/{id_}')
-
-def index_counter(index):
-    return requests.get(f'{BASE_URL}{index}/_count').json()['count']
+def run_add_documents_to_schema(index_: str, bodies: Iterable[dict]):
+    asyncio.run(add_documents_to_schema(index_, bodies))
