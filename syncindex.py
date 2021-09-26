@@ -13,7 +13,8 @@ def get_base_page() -> requests.models.Response:
 def get_index(index_name: str) -> requests.models.Response:
     return requests.get(BASE_URL + index_name)
 
-def create_index(index_name: str, properties: Optional[Iterable[Tuple]]=None) -> requests.models.Response:
+def create_index(index_name: str,
+                 properties: Optional[Iterable[Tuple]]=None) -> requests.models.Response:
     settings = None
     if properties is not None:
         settings = utility.build_settings(properties)
@@ -36,12 +37,16 @@ def list_all_indices() -> List[str]:
     r = requests.get(BASE_URL + '_aliases')
     return list(r.json().keys())
 
-def search_document(index: str, field: str, content: str) -> requests.models.Response:
-    body = utility.build_query(field, content)
-    return requests.get(f'{BASE_URL}{index}/_search?size=500', json=body)
+def search_document(index: str, field: str,
+                    content: str, sort_by: Optional[str] = None) -> requests.models.Response:
+    body = utility.build_query(field, content, sort_by)
+    return requests.get(f'{BASE_URL}{index}/_search?size=20', json=body)
 
 def delete_document_by_id(index: str, id_: str) -> requests.models.Response:
     return requests.delete(f'{BASE_URL}{index}/{id_}')
 
 def index_counter(index: str) -> int:
     return requests.get(f'{BASE_URL}{index}/_count').json()['count']
+
+def list_documents(index: str) -> requests.models.Response:
+    return requests.get(f'{BASE_URL}{index}/_search?size=5000')

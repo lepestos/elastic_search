@@ -4,7 +4,7 @@ from typing import Dict, Iterable, TextIO, Tuple, List
 import syncindex
 import utility
 
-def add_text_document(text: str, created_date: str, rubrics: str, index_: str ='search') -> str:
+def add_text_document(text: str, created_date: str, rubrics: List[str], index_: str ='search') -> str:
     body = {
         'text': text,
         'created_date': utility.date_to_el_format(created_date),

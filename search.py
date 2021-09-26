@@ -1,6 +1,7 @@
 import asyncio
 import csv
-from typing import Iterable, TextIO
+from typing import Dict, Iterable, List
+from requests.models import Response
 
 import aiohttp
 
@@ -22,7 +23,8 @@ async def add_text_document(text: str, created_date: str, rubrics: str,
     await index.add_document(index_, body, session)
 
 
-async def add_text_documents(texts: Iterable[str], created_dates: Iterable[str], rubrics: Iterable[str], index_: str ='search'):
+async def add_text_documents(texts: Iterable[str], created_dates: Iterable[str],
+                             rubrics: Iterable[List[str]], index_: str ='search'):
     tasks = []
     async with aiohttp.ClientSession() as session:
         for t, d, r in zip(texts, created_dates, rubrics):
@@ -31,26 +33,37 @@ async def add_text_documents(texts: Iterable[str], created_dates: Iterable[str],
         await asyncio.gather(*tasks)
 
 
-def run_add_text_documents(texts: Iterable[str], created_dates: Iterable[str], rubrics: Iterable[str], index_: str ='search'):
+def run_add_text_documents(texts: Iterable[str], created_dates: Iterable[str],
+                           rubrics: Iterable[List[str]], index_: str ='search'):
     asyncio.run(add_text_documents(texts, created_dates, rubrics, index_))
 
 
-def add_csv_file(file: TextIO, index_='search'):
-    reader = csv.reader(file, quotechar='"', delimiter=',',
-                        quoting=csv.QUOTE_ALL, skipinitialspace=True)
-    if index_ not in syncindex.list_all_indices():
-        syncindex.create_index(index_, PROPERTIES)
-    texts, created_dates, rubrics = [], [], []
-    next(reader)
-    for t, d, r in reader:
-        texts.append(t)
-        created_dates.append(utility.date_to_el_format(d))
-        rubrics.append(r)
+def add_csv_file(file: str, index_='search'):
+    with open(file, 'r') as f:
+        reader = csv.reader(f, quotechar='"', delimiter=',',
+                            quoting=csv.QUOTE_ALL, skipinitialspace=True)
+        if index_ not in syncindex.list_all_indices():
+            syncindex.create_index(index_, PROPERTIES)
+        texts, created_dates, rubrics = [], [], []
+        next(reader)
+        for t, d, r in reader:
+            texts.append(t)
+            created_dates.append(utility.date_to_el_format(d))
+            rubrics.append(r)
     run_add_text_documents(texts, created_dates, rubrics, index_)
 
 
 def search_document(text: str, index_: str ='search'):
-    response = syncindex.search_document(index_, 'text', text)
+    response = syncindex.search_document(index_, 'text', text, 'created_date')
+    return list_documents_in_response(response, index_)
+
+
+def list_all_documents(index_: str = 'search') -> List[Dict]:
+    response = syncindex.list_documents(index_)
+    return list_documents_in_response(response, index_)
+
+
+def list_documents_in_response(response: Response, index_: str) -> List[Dict]:
     ids = [hit['_id'] for hit in response.json()['hits']['hits']]
     docs = index.run_get_documents_by_id(index_, ids)
     res = []

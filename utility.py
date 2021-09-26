@@ -1,6 +1,6 @@
 from copy import deepcopy
 from datetime import datetime
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Tuple, Optional
 
 DEF_SETTINGS = {
     "settings": {
@@ -60,11 +60,13 @@ def pairs_to_el_format(pairs: Iterable[Tuple]) -> Dict:
     return res
 
 
-def build_query(field: str, content: str) -> Dict:
+def build_query(field: str, content: str, sort_by: Optional[str] = None) -> Dict:
     res = deepcopy(DEF_QUERY)
     res["query"]["match"][field] = {}
     res["query"]["match"][field]["query"] = content
     res["query"]["match"][field]["operator"] = "and"
+    if sort_by is not None:
+        res["sort"] = [{sort_by: {"order": "desc"}}]
     return res.copy()
 
 

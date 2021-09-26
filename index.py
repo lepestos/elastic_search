@@ -3,8 +3,6 @@ from typing import Iterable, List
 
 import aiohttp
 
-import utility
-
 
 BASE_URL = 'http://127.0.0.1:9200/'
 
